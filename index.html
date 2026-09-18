@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>AttendEase</title>
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+    <style>
+      /* Error display */
+      #startup-error {
+        display: none;
+        position: fixed; inset: 0; z-index: 999999;
+        background: #ffffff;
+        padding: 30px; color: #000;
+        font-family: 'Inter', -apple-system, sans-serif;
+        text-align: center;
+        flex-direction: column; align-items: center; justify-content: center;
+      }
+      #startup-error.show { display: flex; }
+    </style>
+</head>
+  <body>
+    <!-- Error screen (hidden by default) -->
+    <div id="startup-error">
+      <div style="width:60px;height:60px;background:rgba(255,23,68,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#ff1744" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:8px;">Loading Error</div>
+      <div style="font-size:12px;color:#aaa;margin-bottom:16px;">Your data is safe! This is just a display issue.</div>
+      <div id="error-detail" style="font-size:10px;color:#ff6b6b;background:#1a1a1a;padding:12px;border-radius:8px;max-width:90vw;word-break:break-all;margin-bottom:20px;text-align:left;"></div>
+      <button onclick="location.reload()" style="padding:14px 40px;border-radius:14px;background:#6c63ff;color:#fff;font-weight:800;font-size:14px;border:none;cursor:pointer;">Reload App</button>
+    </div>
+
+    <div id="root"></div>
+    <script>
+      // Catch ALL errors including module import failures
+      window.onerror = function(msg, url, line, col, err) {
+        console.error('GLOBAL ERROR:', msg, url, line, col, err);
+        var el = document.getElementById('startup-error');
+        var detail = document.getElementById('error-detail');
+        if (el && detail) {
+          detail.textContent = msg + '\n' + (err && err.stack ? err.stack : '') + '\nFile: ' + url + ':' + line;
+          el.classList.add('show');
+        }
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('UNHANDLED PROMISE:', e.reason);
+        var el = document.getElementById('startup-error');
+        var detail = document.getElementById('error-detail');
+        if (el && detail) {
+          detail.textContent = 'Promise Error: ' + (e.reason && e.reason.stack ? e.reason.stack : e.reason);
+          el.classList.add('show');
+        }
+      });
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

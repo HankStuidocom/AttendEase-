@@ -1,0 +1,15 @@
+{
+  "appId": "com.hankstudio.attendease",
+  "appName": "AttendEase",
+  "webDir": "dist",
+  "plugins": {
+    "FirebaseAuthentication": {
+      "providers": ["google.com"]
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon_config_sample",
+      "iconColor": "#6C63FF",
+      "sound": "default"
+    }
+  }
+}

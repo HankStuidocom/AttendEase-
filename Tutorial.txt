@@ -1,0 +1,187 @@
+# ==============================================================================
+#                 ATTENDEASE & HANKSTUDIO ECOSYSTEM TUTORIAL NOTES
+# ==============================================================================
+# Created for: Hank's Development Partner / Reviewers
+# Powered By: Antigravity 2.0 (Agentic AI Coding Assistant by Google DeepMind)
+# Date: June 2026
+# ==============================================================================
+
+This file contains the complete ecosystem documentation, structural breakdowns, and 
+setup tutorials for all three folders inside the "F:\Project 1" directory. 
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. Core Tech Stack & Infrastructure
+2. Folder 1: AttendEase (Mobile App)
+3. Folder 2: attendease-webhook-WebSite (Payment & Logs Backend)
+4. Folder 3: HankStudio-WebPage (Promo Site & Admin Panel)
+5. Integrated Architecture & Flow (How They Talk to Each Other)
+6. Recommended Software & Tools
+7. Step-by-Step Developer Commands
+
+================================================================================
+1. CORE TECH STACK & INFRASTRUCTURE
+================================================================================
+
+This ecosystem operates on a decoupled, modern architecture integrating mobile client, 
+cloud services, secure checkout webhooks, and administrative control panels.
+
+* Frontend App: React 19 + Vite (built for 120Hz lag-free client-side interaction)
+* Native Bridge: Capacitor CLI 8.0 (bridges Web assets into Native Android modules)
+* Database & Auth: Google Firebase (Auth, Firestore DB, Local Notification receivers)
+* Webhook Backend: Node.js + Express (hosted on Render Cloud)
+* Payment Gateway: Cashfree Payments (PG SDK for Pro activations)
+* Static & Web Hosting: Vercel (for the web client app) and Firebase Hosting (for HankStudio portal)
+* AI Tools & Development Suite:
+  - Antigravity 2.0 (Google DeepMind): Core coding assistant used for full-stack codebase refactoring, resolving environment compilation scripts, and orchestrating native package builds.
+  - Google AI Studio (https://aistudio.google.com/): Used to prototype prompt configurations, explore model outputs, and test advanced Gemini integrations.
+  - Claude (Anthropic): Used for premium UI/UX designs, HSL color palettes, planning modern glassmorphism transitions, and visual theme polish.
+  - Codex / Cursor / CodeExe: IDE workspaces featuring code generation and fast auto-completions for JavaScript/React scripting.
+
+================================================================================
+2. FOLDER 1: AttendEase (Mobile Application)
+================================================================================
+Path: F:\Project 1\AttendEase
+
+This is the primary repository containing the React + Capacitor mobile client. It builds 
+into both a fully responsive Web application and a native Android app (.apk).
+
+Key Modules:
+------------
+* src/screens/: Core screens (Dashboard, Timetable, LeaveManager, BunkCalc, Reports, Settings, Profile).
+* src/hooks/usePermissions.js: System prompt controllers that request background and alarm notification permissions on application startup.
+* src/utils/notificationsEngine.js: Internal scheduling logic for daily alarm notifications, weekend sleep checkers, and bedtime timetables.
+* src/components/settings/PDFViewModal.jsx: Custom local file viewer that reads native folders (Documents/AttendEase/PDF), lets the user open them in Chrome/native PDF viewers, or clean them up.
+* android/: Native Android project folder containing resources, Gradle wrappers, and Java setup assets.
+
+App Lifecycle Adjustments:
+-------------------------
+* The onboarding workflow is: Sign In -> Setup Profile -> Add Subjects.
+* Trial claiming: Claims are validated directly against Cloud Firestore to prevent trial loops. Once claimed, the button in Profile is permanently hidden.
+* Navigation: Instantly preloaded (static imports in App.jsx) to facilitate smooth transitions.
+
+================================================================================
+3. FOLDER 2: attendease-webhook-WebSite (Payment Backend)
+================================================================================
+Path: F:\Project 1\attendease-webhook-WebSite
+
+A lightweight Node.js Express server running on Render that bridges the client 
+app and the Cashfree payment gateway safely. It handles credentials securely without 
+exposing secret tokens on client screens.
+
+Key Files:
+----------
+* index.js: Contains the Express endpoints.
+  - POST /create-order: Initializes order sessions with Cashfree and saves a "pending" invoice log to Cloud Firestore.
+  - POST /verify-payment: Webhook callback target that receives Cashfree IPN verification calls, confirms the payload, sets the user's "pro" state to true, and logs order status.
+* serviceAccount.json: Secure key used by firebase-admin SDK to write subscription logs directly into the production Firestore database.
+* .env: Stores environment API keys (`CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`).
+
+Performance Optimizations:
+--------------------------
+* Client apps send warm-up fetches (`method: OPTIONS`) to this server when the user opens payment modals. This wakes up the Render container instantly, removing start-up lag for checkouts.
+
+================================================================================
+4. FOLDER 3: HankStudio-WebPage (Landing Page & Admin Panel)
+================================================================================
+Path: F:\Project 1\HankStudio-WebPage
+
+A public-facing portal for HankStudio. It lets users discover apps, submit reviews, 
+and raising tickets. It also includes an Admin Dashboard for developer management.
+
+Key Files:
+----------
+* index.html / style.css / app.js: The main HankStudio web landing page. Includes user ratings, software descriptions, and feedback forms.
+* admin-hankstudio-panel.html / admin.js: The private Administrator console.
+  - Allows developers to manage logged subscriptions, view activity registers, approve/reject reviews, and respond directly to support tickets.
+* firebase.json: Deploy configs pointing to Firebase Hosting.
+* firestore.rules: Access rules enforcing authentication constraints on databases.
+
+================================================================================
+5. INTEGRATED ARCHITECTURE & FLOW
+================================================================================
+
+How checkout and pro activation works:
+--------------------------------------
+1. User in AttendEase clicks "Upgrade to Pro" -> Modal sends a warm-up ping to Render.
+2. User selects plan -> Requests `attendease-webhook` `/create-order` endpoint.
+3. Webhook requests Cashfree PG -> Returns a session ID. Webhook registers "pending" state in Firestore.
+4. Client opens the secure Cashfree checkout page in the native browser.
+5. User completes payment -> Cashfree sends confirmation to `attendease-webhook`.
+6. Webhook verifies the payload, updates User Profile in Firestore: `{ pro: true, plan: "yearly", ... }` and adds a success payment log.
+7. Mobile Client automatically synchronizes the new Firestore document state via live listeners, immediately unlocking premium tools (Leave Manager, Bunk Calculator, and PDF Exports).
+
+================================================================================
+6. RECOMMENDED SOFTWARE & TOOLS
+================================================================================
+
+Ensure you install these tools to build, test, and edit the project correctly:
+
+1. IDE & Coding Workspaces:
+   - Cursor AI or VS Code: Code workspace integrated with Codex/Copilot features for auto-completions.
+   - Google AI Studio: Prototyping prompt rules and configuring model integrations.
+2. Node.js Environment: Node.js (v20 or newer recommended for package compatibility).
+3. Native Compiler & Emulator: Android Studio (Quail Canary 7 or newer) - used to emulate, run, build, and package the Android APK natively.
+4. Java compiler: OpenJDK 21 or Android Studio's bundled JDK (JBR compiler found at 'Andorid Stuio/jbr/bin').
+5. Command Shell: PowerShell (Admin mode recommended on Windows).
+6. CLI Deployments: Firebase CLI (to deploy HankStudio) and Vercel CLI (to deploy AttendEase).
+
+================================================================================
+7. STEP-BY-STEP DEVELOPER COMMANDS
+================================================================================
+
+Double-check you are in the correct directory in your terminal before running commands.
+
+---
+A. DEVELOPING & RUNNING ATTENDEASE (MOBILE CLIENT)
+---
+1. Install dependencies:
+   cd "F:\Project 1\AttendEase"
+   npm install
+
+2. Run local web server:
+   npm run dev
+
+3. Compile web assets & Synchronize to Android native:
+   npm run sync
+   (This builds the React app into dist/ and copies it to the Android asset folders)
+
+4. Compile Android Debug APK from Command Line:
+   $env:JAVA_HOME="D:\Ai Software\AndroidStudio\Andorid Stuio\jbr"
+   cd android
+   .\gradlew.bat assembleDebug
+   (APK compiles to: F:\Project 1\AttendEase\android\app\build\outputs\apk\debug\app-debug.apk)
+
+5. Deploy Web version to Vercel:
+   npx vercel deploy --prod --yes
+
+---
+B. RUNNING THE WEBHOOK BACKEND
+---
+1. Install dependencies:
+   cd "F:\Project 1\attendease-webhook-WebSite"
+   npm install
+
+2. Configure environment:
+   Create a .env file (copying from .env.example) and add your keys.
+
+3. Run server locally:
+   npm start
+
+---
+C. RUNNING & DEPLOYING HANKSTUDIO WEB PAGE
+---
+1. Setup Firebase Tools globally (first-time only):
+   npm install -g firebase-tools
+
+2. Log in to Firebase Account:
+   firebase login
+
+3. Deploy website & admin panels:
+   cd "F:\Project 1\HankStudio-WebPage"
+   firebase deploy
+
+# ==============================================================================
+#                          END OF ECOSYSTEM DOCUMENTATION
+# ==============================================================================
